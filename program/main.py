@@ -14,6 +14,8 @@ class FileClassification:
 #program global variables
 bgcolor1 = "#C9E4DE"
 
+alnumstring = "012356789abcdefghiljklmnopqrstuvwxyz"
+
 k = 0
 threshold = Decimal(0.50)
 
@@ -206,7 +208,7 @@ def filterbuttonClick():
                 cleanword = "".join(c.lower() for c in word if c.isalpha() or c.isnumeric())
                 if cleanword != "":
                     message.append(cleanword)
-                    if spamDict.get(word) == None and cleanword not in newwords:
+                    if spamDict.get(word) == None and hamDict == None and cleanword not in newwords:
                         newwords.append(cleanword)
             
             
