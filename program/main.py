@@ -208,7 +208,7 @@ def filterbuttonClick():
                 cleanword = "".join(c.lower() for c in word if c.isalpha() or c.isnumeric())
                 if cleanword != "":
                     message.append(cleanword)
-                    if spamDict.get(word) == None and hamDict == None and cleanword not in newwords:
+                    if spamDict.get(word) == None and hamDict.get(word) == None and cleanword not in newwords:
                         newwords.append(cleanword)
             
             
