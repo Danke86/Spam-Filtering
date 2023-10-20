@@ -4,7 +4,6 @@ from tkinter import filedialog
 import os
 import decimal
 from decimal import Decimal
-import math
 
 class FileClassification:
     def __init__(self, filename, classification, probabilitySpam):
@@ -43,11 +42,15 @@ def disableResize(event):
 
 def openSpamFolder():
     global spamSize, spamfolderpath, spamDict, spamNumWords, spamCount, mergedCount
-    spamCount = 0
     bag = {}
     words = []
     spamfolderpath = filedialog.askdirectory()
     if spamfolderpath:
+        #reset variables
+        spamDict = {}
+        spamSize = 0
+        spamNumWords = 0
+        spamCount = 0
         for filename in os.listdir(spamfolderpath):
             if filename:
                 spamCount += 1
@@ -96,11 +99,15 @@ def openSpamFolder():
                                 
 def openHamFolder():
     global hamSize, hamfolderpath, hamDict, hamNumWords, hamCount, mergedCount
-    hamCount = 0
     bag = {}
     words = []
     hamfolderpath = filedialog.askdirectory()
     if hamfolderpath:
+        #reset variables
+        hamDict = {}
+        hamSize = 0
+        hamNumWords = 0
+        hamCount = 0
         for filename in os.listdir(hamfolderpath):
             if filename:
                 hamCount += 1
@@ -155,6 +162,7 @@ def openClassifyFolder():
 
 def filterbuttonClick():
     global k, spamfolderpath, hamfolderpath, classifyfolderpath, classificationArray
+
     tempk = kEntry.get()
     #validate
     if not is_integer(tempk):
@@ -174,7 +182,7 @@ def filterbuttonClick():
         return -1
 
     k = int(tempk)
-
+    classificationArray.clear()
     #Laplace Smoothing
     #Step 1
     p_spam = Decimal((spamCount + k) / ((spamCount+hamCount) + (2*k)))  #P(Spam)
@@ -206,27 +214,21 @@ def filterbuttonClick():
             p_message_spam = Decimal(1.0)
             for word in message:
                 p_message_spam *= Decimal((spamDict.get(word,0) + k) / (spamNumWords + k * (len(newwords) + mergedCount)))
-                # p_message_spam = p_message_spam * Decimal((spamDict.get(word,0) + k) / (spamNumWords + (k*((spamSize+hamSize)+len(newwords)))))
-                # p_message_spam += math.log(Decimal((spamDict.get(word, 0) + k) / (spamNumWords + k * (len(newwords) + spamSize + hamSize))))
+
             print(p_message_spam)
 
             p_message_ham = Decimal(1.0)
             for word in message:
                 p_message_ham *= Decimal((hamDict.get(word,0) + k) / (hamNumWords + k * (len(newwords) + mergedCount)))
-                # p_message_ham = p_message_ham * Decimal((spamDict.get(word,0) + k) / (hamNumWords + (k*((spamSize+hamSize)+len(newwords)))))
-                # p_message_ham += math.log(Decimal((hamDict.get(word, 0) + k) / (hamNumWords + k * (len(newwords) + spamSize + hamSize))))
+                
             print(p_message_ham)
 
             #Step 3
             p_message = Decimal((p_message_spam*p_spam) + (p_message_ham*p_ham))
-            # print(Decimal((math.exp(p_message_spam)*p_spam) + (math.exp(p_message_ham)*p_ham)))
-            # p_message = math.log1p(Decimal((math.exp(p_message_spam)*p_spam) + (math.exp(p_message_ham)*p_ham)))
 
             print(p_message)
 
             p_spam_message = Decimal((p_message_spam*p_spam)/(p_message))
-            # p_spam_message = math.exp(p_message_spam + p_spam - math.log(p_message))
-            # p_spam_message = (math.exp(p_message_spam)*p_spam) / math.expm1(p_message)
 
             print(p_spam_message)
 
@@ -244,6 +246,15 @@ def filterbuttonClick():
         outputFile.write("{} {} {} \n".format(x.filename, x.classification, x.probabilitySpam))
         #update UI
         outputTable.insert("", "end", values=(x.filename, x.classification, x.probabilitySpam))
+
+    outputFile.write("\nHAM\n")
+    outputFile.write("Dictionary Size: {}\n".format(hamSize))
+    outputFile.write("Total Number of Words: {}\n".format(hamNumWords))
+
+    outputFile.write("\nSPAM\n")
+    outputFile.write("Dictionary Size: {}\n".format(spamSize))
+    outputFile.write("Total Number of Words: {}\n".format(spamNumWords))
+
 
     outputFile.close()
     # printValues()
